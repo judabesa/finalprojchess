@@ -1,12 +1,14 @@
 import pygame_gui as gui
-from game import *
 from pygame.locals import *
 from game import Game
 import pygame
+import pygame as pg
+import chessengine
 
 IMAGES = {}
 SQUARE_SIZE = 80
-
+SQ_SIZE = 64
+WIDTH, HEIGHT = 512, 512
 
 class Color:
     WHITE = Color('white')
@@ -47,6 +49,9 @@ class GUI:
         self._second_selected = (0, 0)
         self._valid_moves = []
         self.game = Game()
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
+        self.surface = pygame.Surface((WIDTH, HEIGHT))
 
     def run_game(self) -> None:
         global event
@@ -114,26 +119,23 @@ class GUI:
             pg.display.flip()
             time_delta = clock.tick(30) / 1000.0
 
-    def __draw_board__(self) -> None:
-        count = 0
-        color = (255, 255, 255)
-        for y in range(0, 8):
-            for x in range(0, 8):
-                if count % 2 == 0:
-                    color = (255, 255, 255)
-                else:
-                    color = (127, 127, 127)
-                count = count + 1
-                pg.draw.rect(self._screen, color, pg.rect.Rect(x * 105, y * 105, 105, 105))
-                if self._piece_selected and (y, x) == self._first_selected:
-                    pg.draw.rect(self._screen, (255, 0, 0), pg.rect.Rect(x * 105, y * 105, 105, 105), 2)
-                if self._valid_moves and self._piece_selected and (y, x) in self._valid_moves:
-                    pg.draw.rect(self._screen, (0, 0, 255), pg.rect.Rect(x * 105, y * 105, 105, 105), 2)
-                if self._game.get_piece(y, x):
-                    self._screen.blit(self._game.get_piece(y, x)._image, (x * 105, y * 105))
-            count = count + 1
-        pg.draw.line(self._screen, (0, 0, 0), (0, 840), (840, 840))
-        pg.draw.line(self._screen, (0, 0, 0), (840, 840), (840, 0))
+    def __draw_board__(self, game):
+        self.surface.fill(pg.Color("white"))
+        for r in range(8):
+            for c in range(8):
+                if (r + c) % 2 == 1:
+                    pg.draw.rect(
+                        self.surface,
+                        pg.Color("gray"),
+                        pg.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE),
+                    )
+
+        # Draw the chess pieces
+        for r in range(8):
+            for c in range(8):
+                piece = game.board[r][c]
+                if piece != '--':
+                    self.surface.blit(IMAGES[piece], pygame.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
     def left_click(self, event):
         row, col = get_clicked_pos(event.pos)
@@ -160,10 +162,31 @@ class GUI:
 
 
 def main():
+    pg.init()
+    pg.display.set_caption("Chess")
     g = GUI()
-    g.run_game()
+    clock = pg.time.Clock()
 
+    # Create a new game instance
+    game = chessengine.GameState()
 
+    # ...
 
-if __name__ == '__main__':
-    main()
+    # Draw the initial board
+    g.__draw_board__(game)
+
+    # ...
+
+    while running:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+
+        # ...
+
+        # Draw the board
+        g.__draw_board__(game)
+
+        # ...
+
+    pg.quit()
