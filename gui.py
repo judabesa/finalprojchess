@@ -163,7 +163,7 @@ def main():
     g = GUI()
     g.run_game()
 
-if __name__ == "__main__":
-    load_images()
-    main()
 
+
+if __name__ == '__main__':
+    main()
