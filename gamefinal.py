@@ -215,29 +215,32 @@ class Game:
         self._setup_pieces()
 
     def _setup_pieces(self):
+        # Add white pieces
+        self.board[0][0] = Rook(Color.White)
+        self.board[0][1] = Knight(Color.White)
+        self.board[0][2] = Bishop(Color.White)
+        self.board[0][3] = Queen(Color.White)
+        self.board[0][4] = King(Color.White)
+        self.board[0][5] = Bishop(Color.White)
+        self.board[0][6] = Knight(Color.White)
+        self.board[0][7] = Rook(Color.White)
         for i in range(8):
-            self.board[1][i] = Pawn(Color.Black)
-            self.board[6][i] = Pawn(Color.White)
+            self.board[1][i] = Pawn(Color.White)
 
-        self.board[0][0] = Rook(Color.Black)
-        self.board[0][7] = Rook(Color.Black)
-        self.board[7][0] = Rook(Color.White)
-        self.board[7][7] = Rook(Color.White)
+        # Add black pieces
+        self.board[7][0] = Rook(Color.Black)
+        self.board[7][1] = Knight(Color.Black)
+        self.board[7][2] = Bishop(Color.Black)
+        self.board[7][3] = Queen(Color.Black)
+        self.board[7][4] = King(Color.Black)
+        self.board[7][5] = Bishop(Color.Black)
+        self.board[7][6] = Knight(Color.Black)
+        self.board[7][7] = Rook(Color.Black)
+        for i in range(8):
+            self.board[6][i] = Pawn(Color.Black)
 
-        self.board[0][1] = Knight(Color.Black)
-        self.board[0][6] = Knight(Color.Black)
-        self.board[7][1] = Knight(Color.White)
-        self.board[7][6] = Knight(Color.White)
-
-        self.board[0][2] = Bishop(Color.Black)
-        self.board[0][5] = Bishop(Color.Black)
-        self.board[7][2] = Bishop(Color.White)
-        self.board[7][5] = Bishop(Color.White)
-
-        self.board[0][3] = Queen(Color.Black)
-        self.board[7][3] = Queen(Color.White)
-
-        self.board[0][4] = King(Color.Black)
-        self.board[7][4] = King(Color.White)
-
-
+        # Set images for all pieces
+        for i in range(8):
+            for j in range(8):
+                if self.board[i][j]:
+                    self.board[i][j].set_image(j * 105, i * 105)

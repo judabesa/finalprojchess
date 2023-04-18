@@ -1,5 +1,5 @@
 import pygame
-from gamefinal import Game, Color
+from Scripts.gamefinal import Game
 
 pygame.init()
 
