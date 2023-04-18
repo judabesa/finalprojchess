@@ -1,5 +1,5 @@
 import pygame
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 from enum import Enum
 
 pygame.init()
@@ -28,7 +28,53 @@ class Piece:
     def set_image(self, x: int, y: int) -> None:
         self._image.blit(Piece.SPRITESHEET, (0, 0), pygame.rect.Rect(x, y, 105, 105))
 
-    # Add the rest of the Piece class methods as before, without importing the Game class
+    def _diagonal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        moves = []
+
+        for dy, dx in directions:
+            new_y, new_x = y + dy, x + dx
+            while 0 <= new_y < 8 and 0 <= new_x < 8:
+                moves.append((new_y, new_x))
+                new_y += dy
+                new_x += dx
+
+        return moves
+
+    def _horizontal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        directions = [(-1, 0), (1, 0)]
+        moves = []
+
+        for dy, dx in directions:
+            new_y, new_x = y + dy, x + dx
+            while 0 <= new_y < 8 and 0 <= new_x < 8:
+                moves.append((new_y, new_x))
+                new_y += dy
+                new_x += dx
+
+        return moves
+
+    def _vertical_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        directions = [(0, -1), (0, 1)]
+        moves = []
+
+        for dy, dx in directions:
+            new_y, new_x = y + dy, x + dx
+            while 0 <= new_y < 8 and 0 <= new_x < 8:
+                moves.append((new_y, new_x))
+                new_y += dy
+                new_x += dx
+
+        return moves
+
+    def get_diagonal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        return self._diagonal_moves(y, x)
+
+    def get_horizontal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        return self._horizontal_moves(y, x)
+
+    def get_vertical_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        return self._vertical_moves(y, x)
 
 
 class King(Piece):
@@ -134,9 +180,10 @@ class Rook(Piece):
     def copy(self):
         return Rook(self.color)
 
+
 class Pawn(Piece):
-    def init(self, color: Color):
-        super().init(color)
+    def __init__(self, color: Color):
+        super().__init__(color)
         x = 1050 if color == Color.White else 1155
         y = 525
         self.set_image(x, y)
@@ -148,7 +195,7 @@ class Pawn(Piece):
         # Move forward one square
         new_y = y + direction
         if 0 <= new_y < 8:
-            moves.append((new_y, x))
+            moves.append((new_y, x        ))
 
         # Move forward two squares if on starting rank
         if (self.color == Color.White and y == 6) or (self.color == Color.Black and y == 1):
@@ -169,26 +216,28 @@ class Game:
 
     def _setup_pieces(self):
         for i in range(8):
-            self.board[1][i] = Pawn(Color.BLACK)
-            self.board[6][i] = Pawn(Color.WHITE)
+            self.board[1][i] = Pawn(Color.Black)
+            self.board[6][i] = Pawn(Color.White)
 
-        self.board[0][0] = Rook(Color.BLACK)
-        self.board[0][7] = Rook(Color.BLACK)
-        self.board[7][0] = Rook(Color.WHITE)
-        self.board[7][7] = Rook(Color.WHITE)
+        self.board[0][0] = Rook(Color.Black)
+        self.board[0][7] = Rook(Color.Black)
+        self.board[7][0] = Rook(Color.White)
+        self.board[7][7] = Rook(Color.White)
 
-        self.board[0][1] = Knight(Color.BLACK)
-        self.board[0][6] = Knight(Color.BLACK)
-        self.board[7][1] = Knight(Color.WHITE)
-        self.board[7][6] = Knight(Color.WHITE)
+        self.board[0][1] = Knight(Color.Black)
+        self.board[0][6] = Knight(Color.Black)
+        self.board[7][1] = Knight(Color.White)
+        self.board[7][6] = Knight(Color.White)
 
-        self.board[0][2] = Bishop(Color.BLACK)
-        self.board[0][5] = Bishop(Color.BLACK)
-        self.board[7][2] = Bishop(Color.WHITE)
-        self.board[7][5] = Bishop(Color.WHITE)
+        self.board[0][2] = Bishop(Color.Black)
+        self.board[0][5] = Bishop(Color.Black)
+        self.board[7][2] = Bishop(Color.White)
+        self.board[7][5] = Bishop(Color.White)
 
-        self.board[0][3] = Queen(Color.BLACK)
-        self.board[7][3] = Queen(Color.WHITE)
+        self.board[0][3] = Queen(Color.Black)
+        self.board[7][3] = Queen(Color.White)
 
-        self.board[0][4] = King(Color.BLACK)
-        self.board[7][4] = King(Color.WHITE)
+        self.board[0][4] = King(Color.Black)
+        self.board[7][4] = King(Color.White)
+
+

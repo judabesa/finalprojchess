@@ -1,49 +1,39 @@
 import pygame
-import sys
 from gamefinal import Game, Color
 
-# ...
+pygame.init()
 
-class ChessGUI:
-    def __init__(self, game):
-        self._game = game
-        self._screen = pygame.display.set_mode((840, 840))
-        pygame.display.set_caption("Chess")
+WIDTH = 840
+HEIGHT = 840
+FPS = 60
 
-        self._board = pygame.image.load("images/board.png")
-        self._selected_square = None
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
-        self._clock = pygame.time.Clock()
+game = Game()
 
-    def _draw_pieces(self):
-        # Your implementation here
+WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Chess")
+clock = pygame.time.Clock()
 
-    def run(self):
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
 
-                if event.type ==                 pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        # Left mouse button
-                        x, y = pygame.mouse.get_pos()
-                        self._selected_square = self._get_square_from_pixel(x, y)
-                        # Add your move handling logic here
+    WINDOW.fill(WHITE)
 
-            self._screen.blit(self._board, (0, 0))
-            self._draw_pieces()
+    for y in range(8):
+        for x in range(8):
+            rect = pygame.Rect(x * 105, y * 105, 105, 105)
+            if (x + y) % 2 == 0:
+                pygame.draw.rect(WINDOW, WHITE, rect)
+            else:
+                pygame.draw.rect(WINDOW, BLACK, rect)
 
-            pygame.display.flip()
-            self._clock.tick(60)
+            piece = game.board[y][x]
+            if piece:
+                WINDOW.blit(piece._image, rect)
 
-    def _get_square_from_pixel(self, x: int, y: int) -> Tuple[int, int]:
-        return y // 105, x // 105
-
-if __name__ == "__main__":
-    pygame.init()
-
-    game = Game()
-    gui = ChessGUI(game)
-    gui.run()
-
+    pygame.display.flip()
+    clock.tick(FPS)
