@@ -2,16 +2,10 @@ import pygame
 from typing import List, Tuple
 from enum import Enum
 
-pygame.init()
-
 
 class Color(Enum):
     White = 1
     Black = 2
-
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
 
 
 class Piece:
@@ -28,53 +22,11 @@ class Piece:
     def set_image(self, x: int, y: int) -> None:
         self._image.blit(Piece.SPRITESHEET, (0, 0), pygame.rect.Rect(x, y, 105, 105))
 
-    def _diagonal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-        moves = []
+    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        pass
 
-        for dy, dx in directions:
-            new_y, new_x = y + dy, x + dx
-            while 0 <= new_y < 8 and 0 <= new_x < 8:
-                moves.append((new_y, new_x))
-                new_y += dy
-                new_x += dx
-
-        return moves
-
-    def _horizontal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        directions = [(-1, 0), (1, 0)]
-        moves = []
-
-        for dy, dx in directions:
-            new_y, new_x = y + dy, x + dx
-            while 0 <= new_y < 8 and 0 <= new_x < 8:
-                moves.append((new_y, new_x))
-                new_y += dy
-                new_x += dx
-
-        return moves
-
-    def _vertical_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        directions = [(0, -1), (0, 1)]
-        moves = []
-
-        for dy, dx in directions:
-            new_y, new_x = y + dy, x + dx
-            while 0 <= new_y < 8 and 0 <= new_x < 8:
-                moves.append((new_y, new_x))
-                new_y += dy
-                new_x += dx
-
-        return moves
-
-    def get_diagonal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        return self._diagonal_moves(y, x)
-
-    def get_horizontal_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        return self._horizontal_moves(y, x)
-
-    def get_vertical_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        return self._vertical_moves(y, x)
+    def copy(self):
+        pass
 
 
 class King(Piece):
@@ -121,21 +73,6 @@ class Queen(Piece):
     def copy(self):
         return Queen(self.color)
 
-
-class Bishop(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        x = 420 if color == Color.White else 525
-        y = 525
-        self.set_image(x, y)
-
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        return self.get_diagonal_moves(y, x)
-
-    def copy(self):
-        return Bishop(self.color)
-
-
 class Knight(Piece):
     def __init__(self, color: Color):
         super().__init__(color)
@@ -152,6 +89,7 @@ class Knight(Piece):
         ]
         moves = []
 
+
         for dy, dx in directions:
             new_y, new_x = y + dy, x + dx
             if 0 <= new_y < 8 and 0 <= new_x < 8:
@@ -160,8 +98,21 @@ class Knight(Piece):
         return moves
 
     def copy(self):
-        return Knight(self.color)
+        return King(self.color)
 
+
+class Bishop(Piece):
+    def __init__(self, color: Color):
+        super().__init__(color)
+        x = 420 if color == Color.White else 525
+        y = 525
+        self.set_image(x, y)
+
+    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
+        return self.get_diagonal_moves(y, x)
+
+    def copy(self):
+        return Bishop(self.color)
 
 class Rook(Piece):
     def __init__(self, color: Color):
@@ -195,7 +146,7 @@ class Pawn(Piece):
         # Move forward one square
         new_y = y + direction
         if 0 <= new_y < 8:
-            moves.append((new_y, x        ))
+            moves.append((new_y, x))
 
         # Move forward two squares if on starting rank
         if (self.color == Color.White and y == 6) or (self.color == Color.Black and y == 1):
@@ -215,28 +166,51 @@ class Game:
         self._setup_pieces()
 
     def _setup_pieces(self):
-        # Add white pieces
-        self.board[0][0] = Rook(Color.White)
-        self.board[0][1] = Knight(Color.White)
+        for x in range(8):
+            # Add Pawns
+            self.board[1][x] = Pawn(Color.Black)
+            self.board[6][x] = Pawn(Color.White)
+
+        # Add Rooks
+        self.board[0][0] = Rook(Color.Black)
+        self.board[0][7] = Rook(Color.Black)
+        self.board[7][0] = Rook(Color.White)
+        self.board[7][7] = Rook(Color.White)
+
+        # Add Knights
+        self.board[0][1] = Knight(Color.Black)
+        self.board[0][6] = Knight(Color.Black)
+        self.board[7][1] = Knight(Color.White)
+        self.board[7][6] = Knight(Color.White)
+        # add bishops
         self.board[0][2] = Bishop(Color.White)
-        self.board[0][3] = Queen(Color.White)
-        self.board[0][4] = King(Color.White)
         self.board[0][5] = Bishop(Color.White)
+        self.board[7][2] = Bishop(Color.Black)
+        self.board[7][5] = Bishop(Color.Black)
+
+        # add knights
+        self.board[0][1] = Knight(Color.White)
         self.board[0][6] = Knight(Color.White)
+        self.board[7][1] = Knight(Color.Black)
+        self.board[7][6] = Knight(Color.Black)
+
+        # add rooks
+        self.board[0][0] = Rook(Color.White)
         self.board[0][7] = Rook(Color.White)
+        self.board[7][0] = Rook(Color.Black)
+        self.board[7][7] = Rook(Color.Black)
+
+        # add queens
+        self.board[0][3] = Queen(Color.White)
+        self.board[7][3] = Queen(Color.Black)
+
+        # add kings
+        self.board[0][4] = King(Color.White)
+        self.board[7][4] = King(Color.Black)
+
+        # add pawns
         for i in range(8):
             self.board[1][i] = Pawn(Color.White)
-
-        # Add black pieces
-        self.board[7][0] = Rook(Color.Black)
-        self.board[7][1] = Knight(Color.Black)
-        self.board[7][2] = Bishop(Color.Black)
-        self.board[7][3] = Queen(Color.Black)
-        self.board[7][4] = King(Color.Black)
-        self.board[7][5] = Bishop(Color.Black)
-        self.board[7][6] = Knight(Color.Black)
-        self.board[7][7] = Rook(Color.Black)
-        for i in range(8):
             self.board[6][i] = Pawn(Color.Black)
 
         # Set images for all pieces
