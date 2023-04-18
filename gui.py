@@ -60,7 +60,7 @@ class GUI:
                         self._valid_moves = piece.valid_moves(y, x)
                         self._piece_selected = piece
                     elif self._piece_selected and (y, x) in self._valid_moves:
-                        target = self._game.get(y, x)
+                        target = self._game.get_piece(y, x)
                         moved = self._game.move(self._piece_selected, self._first_selected[0], self._first_selected[1],
                                                 y, x)
                         if moved:
@@ -126,8 +126,8 @@ class GUI:
                     pg.draw.rect(self._screen, (255, 0, 0), pg.rect.Rect(x * 105, y * 105, 105, 105), 2)
                 if self._valid_moves and self._piece_selected and (y, x) in self._valid_moves:
                     pg.draw.rect(self._screen, (0, 0, 255), pg.rect.Rect(x * 105, y * 105, 105, 105), 2)
-                if self._game.get(y, x):
-                    self._screen.blit(self._game.get(y, x)._image, (x * 105, y * 105))
+                if self._game.get_piece(y, x):
+                    self._screen.blit(self._game.get_piece(y, x)._image, (x * 105, y * 105))
             count = count + 1
         pg.draw.line(self._screen, (0, 0, 0), (0, 840), (840, 840))
         pg.draw.line(self._screen, (0, 0, 0), (840, 840), (840, 0))
@@ -147,7 +147,6 @@ class GUI:
         self.game.place_piece(row, col)
 
     def update(self):
-        self.check_for_events
         self.__draw_board__()
         pg.display.update()
 
