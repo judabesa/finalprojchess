@@ -1,7 +1,10 @@
 import pygame_gui as gui
 from game import *
 from pygame.locals import *
+from game import Game
 
+
+SQUARE_SIZE = 80
 
 
 class Color:
@@ -11,6 +14,7 @@ class Color:
 
 class GUI:
     def __init__(self) -> None:
+        self.check_for_events = None
         pg.init()
         self._game = Game()
         self._screen = pg.display.set_mode((1440, 900))
@@ -28,7 +32,13 @@ class GUI:
         self._first_selected = (0, 0)
         self._second_selected = (0, 0)
         self._valid_moves = []
-        self.game = game
+        self.game = Game()
+
+    def get_clicked_pos(self, pos):
+        x, y = pos
+        row = y // SQUARE_SIZE
+        col = x // SQUARE_SIZE
+        return row, col
 
     def run_game(self) -> None:
         running = True
@@ -41,9 +51,9 @@ class GUI:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     x, y = pg.mouse.get_pos()
                     y, x = self.__get_coords__(y, x)
-                    piece = self._game.get(y, x)
+                    piece = self._game.get_piece(y, x)
                     if not self._piece_selected and piece:
-                        if piece.color != self._game.current_player:
+                        if piece.color != self._game.turn:
                             continue
                         self._piece_selected = True
                         self._first_selected = y, x
@@ -137,9 +147,8 @@ class GUI:
         self.game.place_piece(row, col)
 
     def update(self):
-        self.check_events()
-        self.check_status()
-        self.draw_board()
+        self.check_for_events
+        self.__draw_board__()
         pg.display.update()
 
 
