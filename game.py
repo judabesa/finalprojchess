@@ -3,6 +3,7 @@ import pygame as pg
 
 class Piece:
     SPRITESHEET = pg.image.load('./images/pieces.png')
+    SPRITE_SIZE = 64
 
     def __init__(self, color, game):
         self.game = game
@@ -10,6 +11,13 @@ class Piece:
 
     def is_valid_move(self, start, end):
         raise NotImplementedError("This method should be implemented in the subclass")
+
+    def get_sprite(self):
+        raise NotImplementedError("This method should be implemented in the subclass")
+
+    def get_piece_sprite(self, x, y):
+        rect = (self.SPRITE_SIZE * x, self.SPRITE_SIZE * y, self.SPRITE_SIZE, self.SPRITE_SIZE)
+        return self.SPRITESHEET.subsurface(rect)
 
 
 class King(Piece):
@@ -23,6 +31,10 @@ class King(Piece):
                 return True
 
         return False
+
+    def get_sprite(self):
+        x, y = (0, 0) if self.color == 'white' else (0, 1)
+        return self.get_piece_sprite(x, y)
 
 
 class Queen(Piece):
@@ -49,6 +61,10 @@ class Queen(Piece):
 
         return False
 
+    def get_sprite(self):
+        x, y = (1, 0) if self.color == 'white' else (1, 1)
+        return self.get_piece_sprite(x, y)
+
 
 class Rook(Piece):
     def is_valid_move(self, start, end):
@@ -73,6 +89,10 @@ class Rook(Piece):
                 return True
 
         return False
+
+    def get_sprite(self):
+        x, y = (4, 0) if self.color == 'white' else (4, 1)
+        return self.get_piece_sprite(x, y)
 
 
 class Bishop(Piece):
@@ -99,6 +119,10 @@ class Bishop(Piece):
 
         return False
 
+    def get_sprite(self):
+        x, y = (2, 0) if self.color == 'white' else (2, 1)
+        return self.get_piece_sprite(x, y)
+
 
 class Knight(Piece):
     def is_valid_move(self, start, end):
@@ -113,6 +137,10 @@ class Knight(Piece):
                 return True
 
         return False
+
+    def get_sprite(self):
+        x, y = (3, 0) if self.color == 'white' else (3, 1)
+        return self.get_piece_sprite(x, y)
 
 
 class Pawn(Piece):
@@ -138,6 +166,11 @@ class Pawn(Piece):
         # Implement rules for en passant and pawn promotion as needed
 
         return False
+
+    def get_sprite(self):
+        x, y = (5, 0) if self.color == 'white' else (5, 1)
+        return self.get_piece_sprite(x, y)
+
 
 class Game:
     def __init__(self):
@@ -183,6 +216,12 @@ class Game:
             return True
 
         return False
+
+    def move_piece(self, start, end):
+        row1, col1 = start
+        row2, col2 = end
+        self.board[row2][col2] = self.board[row1][col1]
+        self.board[row1][col1] = None
 
 
 if __name__ == "__main__":

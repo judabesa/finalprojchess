@@ -1,11 +1,14 @@
 import pygame as pg
 import pygame_gui as gui
 from game import *
+from tkinter import PhotoImage
+
 
 
 class Color:
     WHITE = "white"
     BLACK = "black"
+
 
 class GUI:
     def __init__(self) -> None:
@@ -15,12 +18,13 @@ class GUI:
         pg.display.set_caption("Laker Chess")
         self._pieces = pg.image.load("./images/pieces.png")
         self._ui_manager = gui.UIManager((1440, 900))
-        self._side_box = gui.elements.UITextBox('<b>Laker Chess</b><br /><br />White moves first.<br />', relative_rect=pg.Rect((1000, 100), (400, 500)),
-                                 manager=self._ui_manager)
-        self._undo_button = gui.elements.UIButton(relative_rect = pg.Rect((1000, 50), (100, 50)), text='Undo',
-                                     manager=self._ui_manager)
-        self._restart_button = gui.elements.UIButton(relative_rect = pg.Rect((1200, 50), (100, 50)), text='Reset',
-                                     manager=self._ui_manager)
+        self._side_box = gui.elements.UITextBox('<b>Laker Chess</b><br /><br />White moves first.<br />',
+                                                relative_rect=pg.Rect((1000, 100), (400, 500)),
+                                                manager=self._ui_manager)
+        self._undo_button = gui.elements.UIButton(relative_rect=pg.Rect((1000, 50), (100, 50)), text='Undo',
+                                                  manager=self._ui_manager)
+        self._restart_button = gui.elements.UIButton(relative_rect=pg.Rect((1200, 50), (100, 50)), text='Reset',
+                                                     manager=self._ui_manager)
         self._piece_selected = False
         self._first_selected = (0, 0)
         self._second_selected = (0, 0)
@@ -47,10 +51,11 @@ class GUI:
                         self._piece_selected = piece
                     elif self._piece_selected and (y, x) in self._valid_moves:
                         target = self._game.get(y, x)
-                        moved = self._game.move(self._piece_selected, self._first_selected[0], self._first_selected[1], y, x)
+                        moved = self._game.move(self._piece_selected, self._first_selected[0], self._first_selected[1],
+                                                y, x)
                         if moved:
                             self._side_box.append_html_text(self._piece_selected.color.name + ' moved '
-                                                  + str(type(self._piece_selected).__name__))
+                                                            + str(type(self._piece_selected).__name__))
                             if target:
                                 self._side_box.append_html_text(' and captures ' + str(type(target).__name__))
                             self._side_box.append_html_text('<br />')
