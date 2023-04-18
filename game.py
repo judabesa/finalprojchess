@@ -1,4 +1,5 @@
 import pygame as pg
+from pygame.locals import *
 
 
 class Piece:
@@ -178,12 +179,12 @@ class Game:
         self.turn = "white"
 
     def setup_board(self):
-            # Place the white pieces
+        # Place the white pieces
         self.board[0] = [Rook("white", self), Knight("white", self), Bishop("white", self), Queen("white", self),
                              King("white", self), Bishop("white", self), Knight("white", self), Rook("white", self)]
         self.board[1] = [Pawn("white", self) for _ in range(8)]
 
-            # Place the black pieces
+# Place the black pieces
         self.board[7] = [Rook("black", self), Knight("black", self), Bishop("black", self), Queen("black", self),
                              King("black", self), Bishop("black", self), Knight("black", self), Rook("black", self)]
         self.board[6] = [Pawn("black", self) for _ in range(8)]
@@ -223,6 +224,36 @@ class Game:
         self.board[row2][col2] = self.board[row1][col1]
         self.board[row1][col1] = None
 
+    def check(self, color):
+        # Check if the king of the given color is in check.
+        king_pos = self.find_king(color)
+        for piece in self.pieces:
+            if piece.color != color:
+                if king_pos in piece.get_moves(self.board):
+                    return True
+        return False
+
+    def mate(self, color):
+        # Check if the king of the given color is in checkmate.
+        if not self.check(color):
+            return False
+        for piece in self.pieces:
+            if piece.color == color:
+                for move in piece.get_moves(self.board):
+                    # Make the move temporarily to see if the king is still in check
+                    temp_board = self.board.copy()
+                    temp_board[piece.pos] = None
+                    temp_board[move] = piece
+                    if not self.check(color):
+                        return False
+        return True
+
+    def find_king(self, color):
+        # Find the position of the king of the given color.
+        for piece in self.pieces:
+            if isinstance(piece, King) and piece.color == color:
+                return piece.pos
+        raise ValueError("No king of color {} found in game.".format(color))
 
 if __name__ == "__main__":
     game = Game()

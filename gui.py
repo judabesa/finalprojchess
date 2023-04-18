@@ -1,13 +1,11 @@
-import pygame as pg
 import pygame_gui as gui
 from game import *
-from tkinter import PhotoImage
 
 
 
 class Color:
-    WHITE = "white"
-    BLACK = "black"
+    WHITE = Color('white')
+    BLACK = Color('black')
 
 
 class GUI:
@@ -121,6 +119,26 @@ class GUI:
             count = count + 1
         pg.draw.line(self._screen, (0, 0, 0), (0, 840), (840, 840))
         pg.draw.line(self._screen, (0, 0, 0), (840, 840), (840, 0))
+
+    def left_click(self, event):
+        row, col = self.get_clicked_pos(event.pos)
+        selected_piece = self.game.get_piece(row, col)
+        if selected_piece is not None and selected_piece.color == self.game.turn:
+            self.selected_piece = selected_piece
+        else:
+            if self.selected_piece is not None:
+                self.game.move_piece(self.selected_piece.pos, (row, col))
+            self.selected_piece = None
+
+    def right_click(self, event):
+        row, col = self.get_clicked_pos(event.pos)
+        self.game.place_piece(row, col)
+
+    def update(self):
+        self.check_events()
+        self.check_status()
+        self.draw_board()
+        pg.display.update()
 
 
 def main():
