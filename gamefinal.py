@@ -23,6 +23,7 @@ class Piece(ABC):
     def __init__(self, color: Color):
         self._color = color
         self._image = pygame.Surface((105, 105), pygame.SRCALPHA)
+        self.board = board
 
     @property
     def color(self):
@@ -255,10 +256,10 @@ class Game:
             self.board[1][i] = Pawn(self, Color.BLACK, (1, i))
             self.board[6][i] = Pawn(self, Color.WHITE, (6, i))
 
-        # Add other pieces for both players
-        for i, piece_class in enumerate([Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]):
-            self.board[0][i] = piece_class(self, Color.BLACK, (0, i))
-            self.board[7][i] = piece_class(self, Color.WHITE, (7, i))
+        pieces = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
+        for i, piece in enumerate(pieces):
+            self.board[0][i] = piece(self, Color.BLACK, 0, i)
+            self.board[7][i] = piece(self, Color.WHITE, 7, i)
 
     def get(self, y: int, x: int) -> Optional[Piece]:
         if 0 <= y < 8 and 0 <= x < 8:
