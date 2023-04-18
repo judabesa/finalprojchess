@@ -1,5 +1,6 @@
 import pygame_gui as gui
 from game import *
+from pygame.locals import *
 
 
 
@@ -27,6 +28,7 @@ class GUI:
         self._first_selected = (0, 0)
         self._second_selected = (0, 0)
         self._valid_moves = []
+        self.game = game
 
     def run_game(self) -> None:
         running = True

@@ -1,5 +1,4 @@
 import pygame as pg
-from pygame.locals import *
 
 
 class Piece:
@@ -177,6 +176,7 @@ class Game:
     def __init__(self):
         self.board = [[None] * 8 for _ in range(8)]
         self.turn = "white"
+        self.pieces = []
 
     def setup_board(self):
         # Place the white pieces
@@ -190,7 +190,7 @@ class Game:
         self.board[6] = [Pawn("black", self) for _ in range(8)]
         # Set up the initial board with pieces
         # Replace this code with the actual initial chess setup
-        self.board[0][0] = King("white")
+        self.board[0][0] = King("white", self)
 
     def get_piece(self, row, col):
         if 0 <= row < 8 and 0 <= col < 8:
@@ -199,7 +199,7 @@ class Game:
 
     def place_piece(self, row, col):
         if not self.board[row][col]:
-            self.board[row][col] = King("white")
+            self.board[row][col] = King("white", self)
         else:
             self.board[row][col] = None
 
