@@ -1,49 +1,49 @@
 import pygame
+import sys
 from gamefinal import Game, Color
 
-pygame.init()
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
+# ...
 
 class ChessGUI:
-    def __init__(self):
-        self._game = Game()
+    def __init__(self, game):
+        self._game = game
         self._screen = pygame.display.set_mode((840, 840))
         pygame.display.set_caption("Chess")
 
-    def run(self):
-        clock = pygame.time.Clock()
+        self._board = pygame.image.load("images/board.png")
+        self._selected_square = None
 
-        running = True
-        while running:
+        self._clock = pygame.time.Clock()
+
+    def _draw_pieces(self):
+        # Your implementation here
+
+    def run(self):
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    sys.exit()
 
-            self._draw_board()
+                if event.type ==                 pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        # Left mouse button
+                        x, y = pygame.mouse.get_pos()
+                        self._selected_square = self._get_square_from_pixel(x, y)
+                        # Add your move handling logic here
+
+            self._screen.blit(self._board, (0, 0))
             self._draw_pieces()
 
             pygame.display.flip()
-            clock.tick(60)
+            self._clock.tick(60)
 
-        pygame.quit()
-
-    def _draw_board(self):
-        for y in range(8):
-            for x in range(8):
-                color = WHITE if (x + y) % 2 == 0 else BLACK
-                pygame.draw.rect(self._screen, color, pygame.Rect(x * 105, y * 105, 105, 105))
-
-    def _draw_pieces(self):
-        for y in range(8):
-            for x in range(8):
-                piece = self._game.board[y][x]
-                if piece is not None:
-                    self._screen.blit(piece._image, (x * 105, y * 105))
-
+    def _get_square_from_pixel(self, x: int, y: int) -> Tuple[int, int]:
+        return y // 105, x // 105
 
 if __name__ == "__main__":
-    gui = ChessGUI()
+    pygame.init()
+
+    game = Game()
+    gui = ChessGUI(game)
     gui.run()
+
