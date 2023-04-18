@@ -1,226 +1,204 @@
-import pygame
-from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional
-from enum import Enum
-
-pygame.init()
-
-class Color(Enum):
-    White = 1
-    Black = 2
+import pygame as pg
 
 
-class Piece(ABC):
-    SPRITESHEET = pygame.image.load("images/pieces.png")
-    _game = None
+class Piece:
+    SPRITESHEET = pg.image.load('./images/pieces.png')
 
-    @staticmethod
-    def set_game(game):
-        if not isinstance(game, Game):
-            raise ValueError("You must provide a valid Game instance.")
-        Piece._game = game
+    def __init__(self, color):
+        self.color = color
 
-    def __init__(self, color: Color):
-        self._color = color
-        self._image = pygame.Surface((105, 105), pygame.SRCALPHA)
-
-    @property
-    def color(self):
-        return self._color
-
-    def set_image(self, x: int, y: int) -> None:
-        self._image.blit(Piece.SPRITESHEET, (0, 0), pygame.rect.Rect(x, y, 105, 105))
-
-    def _diagonal_moves(self, y: int, x: int, distance: int) -> List[Tuple[int, int]]:
-        moves = []
-        for y_d in (-1, 1):
-            for x_d in (-1, 1):
-                moves.extend(self._game.get_moves_in_line(y, x, y_d, x_d, distance))
-        return moves
-
-    def _horizontal_moves(self, y: int, x: int, distance: int) -> List[Tuple[int, int]]:
-        moves = []
-        for x_d in (-1, 1):
-            moves.extend(self._game.get_moves_in_line(y, x, 0, x_d, distance))
-        return moves
-
-    def _vertical_moves(self, y: int, x: int, distance: int) -> List[Tuple[int, int]]:
-        moves = []
-        for y_d in (-1, 1):
-            moves.extend(self._game.get_moves_in_line(y, x, y_d, 0, distance))
-        return moves
-
-    def get_diagonal_moves(self, y: int, x: int, distance: int) -> List[Tuple[int, int]]:
-        return self._diagonal_moves(y, x, distance)
-
-    def get_horizontal_moves(self, y: int, x: int, distance: int) -> List[Tuple[int, int]]:
-        return self._horizontal_moves(y, x, distance)
-
-    def get_vertical_moves(self, y: int, x: int, distance: int) -> List[Tuple[int, int]]:
-        return self._vertical_moves(y, x, distance)
-
-    @abstractmethod
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        pass
-
-    @abstractmethod
-    def copy(self):
-        pass
+    def is_valid_move(self, start, end):
+        raise NotImplementedError("This method should be implemented in the subclass")
 
 
 class King(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        y = 0 if color == Color.WHITE else 105
-        self.set_image(0, y)
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
 
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        horizontal = self.get_horizontal_moves(y, x, 1)
-        vertical = self.get_vertical_moves(y, x, 1)
-        diagonal = self.get_diagonal_moves(y, x, 1)
-        return horizontal + vertical + diagonal
+        if row_diff <= 1 and col_diff <= 1:
+            target_piece = self.game.get_piece(*end)
+            if target_piece is None or target_piece.color != self.color:
+                return True
 
-    def copy(self):
-        return King(self._color)
+        return False
+
 
 class Queen(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        y = 0 if color == Color.WHITE else 105
-        self.set_image(525, y)
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
 
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        horizontal = self.get_horizontal_moves(y, x, 8)
-        vertical = self.get_vertical_moves(y, x, 8)
-        diagonal = self.get_diagonal_moves(y, x, 8)
-        return horizontal + vertical + diagonal
+        # Check if the move is diagonal, horizontal, or vertical
+        if row_diff == col_diff or start[0] == end[0] or start[1] == end[1]:
+            # Check if there are no pieces blocking the path
+            direction = (int((end[0] - start[0]) / max(row_diff, 1)), int((end[1] - start[1]) / max(col_diff, 1)))
+            current_row, current_col = start[0] + direction[0], start[1] + direction[1]
 
-    def copy(self):
-        return Queen(self._color)
+            while (current_row, current_col) != end:
+                if self.game.get_piece(current_row, current_col) is not None:
+                    return False
+                current_row += direction[0]
+                current_col += direction[1]
 
+            # If the target square is empty or contains an opponent's piece, the move is valid
+            target_piece = self.game.get_piece(*end)
+            if target_piece is None or target_piece.color != self.color:
+                return True
 
-class Bishop(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        y = 0 if color == Color.WHITE else 105
-        self.set_image(315, y)
-
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        return self.get_diagonal_moves(y, x, 8)
-
-    def copy(self):
-        return Bishop(self._color)
-
-
-class Knight(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        y = 0 if color == Color.WHITE else 105
-        self.set_image(210, y)
-
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        moves = []
-        for y_d in (-2, -1, 1, 2):
-            for x_d in (-2, -1, 1, 2):
-                if abs(y_d) != abs(x_d):
-                    moves.append((y + y_d, x + x_d))
-        return [move for move in moves if self._game.is_valid_move(y, x, *move)]
-
-    def copy(self):
-        return Knight(self._color)
+        return False
 
 
 class Rook(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        y = 0 if color == Color.WHITE else 105
-        self.set_image(105, y)
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
 
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        horizontal = self.get_horizontal_moves(y, x, 8)
-        vertical = self.get_vertical_moves(y, x, 8)
-        return horizontal + vertical
+        # Check if the move is horizontal or vertical
+        if start[0] == end[0] or start[1] == end[1]:
+            # Check if there are no pieces blocking the path
+            direction = (int((end[0] - start[0]) / max(row_diff, 1)), int((end[1] - start[1]) / max(col_diff, 1)))
+            current_row, current_col = start[0] + direction[0], start[1] + direction[1]
 
-    def copy(self):
-        return Rook(self._color)
+            while (current_row, current_col) != end:
+                if self.game.get_piece(current_row, current_col) is not None:
+                    return False
+                current_row += direction[0]
+                current_col += direction[1]
+
+            # If the target square is empty or contains an opponent's piece, the move is valid
+            target_piece = self.game.get_piece(*end)
+            if target_piece is None or target_piece.color != self.color:
+                return True
+
+        return False
+
+
+class Bishop(Piece):
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
+
+        # Check if the move is diagonal
+        if row_diff == col_diff:
+            # Check if there are no pieces blocking the path
+            direction = (int((end[0] - start[0]) / row_diff), int((end[1] - start[1]) / col_diff))
+            current_row, current_col = start[0] + direction[0], start[1] + direction[1]
+
+            while (current_row, current_col) != end:
+                if self.game.get_piece(current_row, current_col) is not None:
+                    return False
+                current_row += direction[0]
+                current_col += direction[1]
+
+            # If the target square is empty or contains an opponent's piece, the move is valid
+            target_piece = self.game.get_piece(*end)
+            if target_piece is None or target_piece.color != self.color:
+                return True
+
+        return False
+
+
+class Bishop(Piece):
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
+
+        # Check if the move is diagonal
+        if row_diff == col_diff:
+            # Check if there are no pieces blocking the path
+            direction = (int((end[0] - start[0]) / row_diff), int((end[1] - start[1]) / col_diff))
+            current_row, current_col = start[0] + direction[0], start[1] + direction[1]
+
+            while (current_row, current_col) != end:
+                if self.game.get_piece(current_row, current_col) is not None:
+                    return False
+                current_row += direction[0]
+                current_col += direction[1]
+
+            # If the target square is empty or contains an opponent's piece, the move is valid
+            target_piece = self.game.get_piece(*end)
+            if target_piece is None or target_piece.color != self.color:
+                return True
+
+        return False
+
+
+class Knight(Piece):
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
+
+        # Check if the move is an L-shape (two squares in one direction and one square in the other)
+        if (row_diff == 2 and col_diff == 1) or (row_diff == 1 and col_diff == 2):
+            # If the target square is empty or contains an opponent's piece, the move is valid
+            target_piece = self.game.get_piece(*end)
+            if target_piece is None or target_piece.color != self.color:
+                return True
+
+        return False
 
 
 class Pawn(Piece):
-    def __init__(self, color: Color):
-        super().__init__(color)
-        y = 0 if color == Color.WHITE else 105
-        self.set_image(420, y)
-        self._first_move = True
+    def is_valid_move(self, start, end):
+        row_diff = abs(start[0] - end[0])
+        col_diff = abs(start[1] - end[1])
 
-    def valid_moves(self, y: int, x: int) -> List[Tuple[int, int]]:
-        moves = []
-        y_d = -1 if self._color == Color.WHITE else 1
-        forward = (y + y_d, x)
-        if self._game.is_valid_move(y, x, *forward, same_color=False):
-            moves.append(forward)
+        forward = 1 if self.color == "white" else -1
 
-        if self._first_move:
-            double_forward = (y + 2 * y_d, x)
-            if self._game.is_valid_move(y, x, *double_forward, same_color=False):
-                moves.append(double_forward)
+        # Check if the move is a single step forward
+        if start[0] + forward == end[0] and start[1] == end[1]:
+            # If the target square is empty, the move is valid
+            if self.game.get_piece(*end) is None:
+                return True
 
-        for x_d in (-1, 1):
-            capture = (y + y_d, x + x_d)
-            if self._game.is_valid_move(y, x, *capture, same_color=True):
-                moves.append(capture)
+        # Check if the move is a diagonal capture
+        if start[0] + forward == end[0] and col_diff == 1:
+            # If the target square contains an opponent's piece, the move is valid
+            target_piece = self.game.get_piece(*end)
+            if target_piece is not None and target_piece.color != self.color:
+                return True
 
-        return moves
+        # Implement rules for en passant and pawn promotion as needed
 
-        def copy(self):
-            new_pawn = Pawn(self._color)
-            new_pawn._first_move = self._first_move
-            return new_pawn
+        return False
 
-    class Game:
-        def __init__(self):
-            self.board = [[None for _ in range(8)] for _ in range(8)]
-            self._setup_pieces()
+class Game:
+    def __init__(self):
+        self.board = [[None] * 8 for _ in range(8)]
+        self.turn = "white"
 
-        def _setup_pieces(self):
-            for i in range(8):
-                self.board[1][i] = Pawn(Color.BLACK)
-                self.board[6][i] = Pawn(Color.WHITE)
+        # Set up the initial board with pieces
+        # Replace this code with the actual initial chess setup
+        self.board[0][0] = King("white")
 
-            for i, cls in enumerate([Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]):
-                self.board[0][i] = cls(Color.BLACK)
-                self.board[7][i] = cls(Color.WHITE)
+    def get_piece(self, row, col):
+        if 0 <= row < 8 and 0 <= col < 8:
+            return self.board[row][col]
+        return None
 
-        def is_valid_move(self, y: int, x: int, y_to: int, x_to: int, same_color: bool = False) -> bool:
-            if not (0 <= y_to < 8 and 0 <= x_to < 8):
-                return False
-            if not same_color and self.board[y_to][x_to] is not None and self.board[y_to][x_to].color == self.board[y][
-                x].color:
-                return False
+    def place_piece(self, row, col):
+        if not self.board[row][col]:
+            self.board[row][col] = King("white")
+        else:
+            self.board[row][col] = None
+
+    def move(self, start, end):
+        if not (0 <= start[0] < 8 and 0 <= start[1] < 8 and 0 <= end[0] < 8 and 0 <= end[1] < 8):
+            return False
+
+        piece = self.get_piece(*start)
+        target = self.get_piece(*end)
+
+        if piece and piece.color == self.turn and piece.is_valid_move(start, end):
+            self.board[end[0]][end[1]] = piece
+            self.board[start[0]][start[1]] = None
+            self.turn = "black" if self.turn == "white" else "white"
             return True
 
-        def get_moves_in_line(self, y: int, x: int, y_d: int, x_d: int, distance: int) -> List[Tuple[int, int]]:
-            moves = []
-            for i in range(1, distance + 1):
-                y_to, x_to = y + y_d * i, x + x_d * i
-                if not self.is_valid_move(y, x, y_to, x_to):
-                    break
-                moves.append((y_to, x_to))
-                if self.board[y_to][x_to] is not None:
-                    break
-            return moves
+        return False
 
-        def move(self, y_from: int, x_from: int, y_to: int, x_to: int) -> None:
-            if not self.is_valid_move(y_from, x_from, y_to, x_to):
-                raise ValueError("Invalid move")
 
-            piece = self.board[y_from][x_from]
-            if piece is None:
-                raise ValueError("No piece at the given position")
-
-            if (y_to, x_to) not in piece.valid_moves(y_from, x_from):
-                raise ValueError("The piece cannot move to the given position")
-
-            self.board[y_to][x_to] = piece
-            self.board[y_from][x_from] = None
-            if isinstance(piece, Pawn):
-                piece._first_move = False
+if __name__ == "__main__":
+    game = Game()
+    game.place_piece(0, 0)
