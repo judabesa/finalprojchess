@@ -2,6 +2,11 @@ import pygame as pg
 import pygame_gui as gui
 from game import *
 
+
+class Color:
+    WHITE = "white"
+    BLACK = "black"
+
 class GUI:
     def __init__(self) -> None:
         pg.init()

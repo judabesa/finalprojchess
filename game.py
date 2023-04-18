@@ -4,7 +4,8 @@ import pygame as pg
 class Piece:
     SPRITESHEET = pg.image.load('./images/pieces.png')
 
-    def __init__(self, color):
+    def __init__(self, color, game):
+        self.game = game
         self.color = color
 
     def is_valid_move(self, start, end):
@@ -99,31 +100,6 @@ class Bishop(Piece):
         return False
 
 
-class Bishop(Piece):
-    def is_valid_move(self, start, end):
-        row_diff = abs(start[0] - end[0])
-        col_diff = abs(start[1] - end[1])
-
-        # Check if the move is diagonal
-        if row_diff == col_diff:
-            # Check if there are no pieces blocking the path
-            direction = (int((end[0] - start[0]) / row_diff), int((end[1] - start[1]) / col_diff))
-            current_row, current_col = start[0] + direction[0], start[1] + direction[1]
-
-            while (current_row, current_col) != end:
-                if self.game.get_piece(current_row, current_col) is not None:
-                    return False
-                current_row += direction[0]
-                current_col += direction[1]
-
-            # If the target square is empty or contains an opponent's piece, the move is valid
-            target_piece = self.game.get_piece(*end)
-            if target_piece is None or target_piece.color != self.color:
-                return True
-
-        return False
-
-
 class Knight(Piece):
     def is_valid_move(self, start, end):
         row_diff = abs(start[0] - end[0])
@@ -168,6 +144,16 @@ class Game:
         self.board = [[None] * 8 for _ in range(8)]
         self.turn = "white"
 
+    def setup_board(self):
+            # Place the white pieces
+        self.board[0] = [Rook("white", self), Knight("white", self), Bishop("white", self), Queen("white", self),
+                             King("white", self), Bishop("white", self), Knight("white", self), Rook("white", self)]
+        self.board[1] = [Pawn("white", self) for _ in range(8)]
+
+            # Place the black pieces
+        self.board[7] = [Rook("black", self), Knight("black", self), Bishop("black", self), Queen("black", self),
+                             King("black", self), Bishop("black", self), Knight("black", self), Rook("black", self)]
+        self.board[6] = [Pawn("black", self) for _ in range(8)]
         # Set up the initial board with pieces
         # Replace this code with the actual initial chess setup
         self.board[0][0] = King("white")
