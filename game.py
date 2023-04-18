@@ -1,5 +1,5 @@
 import pygame as pg
-
+from typing import Optional
 
 class Piece:
     SPRITESHEET = pg.image.load('./images/pieces.png')
@@ -24,6 +24,7 @@ class King(Piece):
     def is_valid_move(self, start, end):
         row_diff = abs(start[0] - end[0])
         col_diff = abs(start[1] - end[1])
+        self.pos = None
 
         if row_diff <= 1 and col_diff <= 1:
             target_piece = self.game.get_piece(*end)
@@ -204,18 +205,13 @@ class Game:
             self.board[row][col] = None
 
     def move(self, start, end):
-        if not (0 <= start[0] < 8 and 0 <= start[1] < 8 and 0 <= end[0] < 8 and 0 <= end[1] < 8):
-            return False
-
-        piece = self.get_piece(*start)
-        target = self.get_piece(*end)
-
-        if piece and piece.color == self.turn and piece.is_valid_move(start, end):
-            self.board[end[0]][end[1]] = piece
-            self.board[start[0]][start[1]] = None
-            self.turn = "black" if self.turn == "white" else "white"
-            return True
-
+        piece: Optional[Piece] = self.board[start[0]][start[1]]
+        if piece is not None and piece.color == self.turn:
+            if piece.is_valid_move(start, end,):
+                self.board[end[0]][end[1]] = piece
+                self.board[start[0]][start[1]] = None
+                self.turn = not self.turn
+                return True
         return False
 
     def move_piece(self, start, end):
